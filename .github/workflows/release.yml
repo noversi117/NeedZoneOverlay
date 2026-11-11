@@ -1,0 +1,38 @@
+# Builds the overlay and publishes a GitHub release whenever you push a version tag, e.g. v1.0.1.
+# The app's "Check for updates" button installs the newest release's .zip.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Download title font
+        shell: cmd
+        run: call get_fonts.bat
+
+      - name: Build
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          dotnet publish NeedZones.csproj -c Release -r win-x64 --self-contained false `
+            -p:PublishSingleFile=true -p:DebugType=none -p:Version=$version -o publish
+          Compress-Archive -Path publish\* -DestinationPath "LiveNeedZones-$version.zip"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: LiveNeedZones-*.zip
+          generate_release_notes: true

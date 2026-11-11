@@ -1,0 +1,233 @@
+<Window x:Class="NeedZones.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="CoTW Need Zones"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Topmost="True" ShowInTaskbar="False" ResizeMode="NoResize"
+        SizeToContent="Height" Width="400" MinWidth="300" MaxHeight="720"
+        FontFamily="{DynamicResource BodyFont}" FontSize="{DynamicResource Fs}"
+        Foreground="{DynamicResource FgBrush}"
+        UseLayoutRounding="True" TextOptions.TextFormattingMode="Display">
+
+    <Border x:Name="Panel" CornerRadius="10" Background="{DynamicResource BgBrush}"
+          BorderBrush="{DynamicResource BorderBrushC}" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title bar -->
+            <Border x:Name="TitleBar" Grid.Row="0" Background="{DynamicResource Bg2Brush}" CornerRadius="9,9,0,0"
+              Padding="10,6,6,6" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid>
+                <DockPanel LastChildFill="False">
+                    <TextBlock x:Name="TitleText" Text="LIVE NEED ZONES" DockPanel.Dock="Left" VerticalAlignment="Center"
+                     FontFamily="{DynamicResource TitleFont}" FontSize="{DynamicResource FsTitle}" FontWeight="SemiBold"
+                     Foreground="{DynamicResource AccentBrush}" Cursor="SizeAll" ToolTip="Drag to move"/>
+                    <Button x:Name="MapButton" DockPanel.Dock="Left" Margin="12,0,0,0" Style="{StaticResource MapButton}"
+                  Click="MapButton_Click" ToolTip="Select the map you're hunting on">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Select Map" VerticalAlignment="Center"/>
+                            <Path Data="M4.5,6.5 L8,10 L11.5,6.5" Stroke="{DynamicResource FgBrush}" StrokeThickness="1.4"
+                    StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                    Width="14" Height="14" Margin="6,1,0,0" VerticalAlignment="Center">
+                                <Path.RenderTransform>
+                                    <ScaleTransform ScaleX="0.875" ScaleY="0.875"/>
+                                </Path.RenderTransform>
+                            </Path>
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="CloseButton" DockPanel.Dock="Right" Style="{StaticResource IconButton}"
+                  Click="CloseButton_Click" ToolTip="Close">
+                        <Path Style="{StaticResource IconPath}" Data="M4,4 L12,12 M12,4 L4,12"/>
+                    </Button>
+                    <Button x:Name="MinButton" DockPanel.Dock="Right" Style="{StaticResource IconButton}"
+                  Click="MinButton_Click" ToolTip="Compact: show only selected species">
+                        <Path x:Name="MinIcon" Style="{StaticResource IconPath}" Data="M4,10 L8,6 L12,10"/>
+                    </Button>
+                    <Button x:Name="SettingsButton" DockPanel.Dock="Right" Style="{StaticResource IconButton}"
+                  Click="SettingsButton_Click" ToolTip="Settings">
+                        <Grid Width="15" Height="15">
+                            <Path Style="{StaticResource IconPath}" Data="M2,4 L14,4 M2,8 L14,8 M2,12 L14,12"/>
+                            <Canvas Width="16" Height="16">
+                                <Canvas.RenderTransform>
+                                    <ScaleTransform ScaleX="0.9375" ScaleY="0.9375"/>
+                                </Canvas.RenderTransform>
+                                <Ellipse Canvas.Left="3.4" Canvas.Top="2.4" Width="3.2" Height="3.2" StrokeThickness="1.3"
+                         Fill="{DynamicResource Bg2Brush}"
+                         Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                <Ellipse Canvas.Left="9.4" Canvas.Top="6.4" Width="3.2" Height="3.2" StrokeThickness="1.3"
+                         Fill="{DynamicResource Bg2Brush}"
+                         Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                <Ellipse Canvas.Left="5.4" Canvas.Top="10.4" Width="3.2" Height="3.2" StrokeThickness="1.3"
+                         Fill="{DynamicResource Bg2Brush}"
+                         Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                            </Canvas>
+                            <Ellipse x:Name="UpdateDot" Width="7" Height="7" Fill="{DynamicResource AccentBrush}"
+                                     HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-3,-4,0"
+                                     Visibility="Collapsed" IsHitTestVisible="False"/>
+                        </Grid>
+                    </Button>
+                    <Button x:Name="SyncButton" DockPanel.Dock="Right" Style="{StaticResource IconButton}"
+                  Click="SyncButton_Click" ToolTip="Enter the in-game time (Ctrl+Alt+T)">
+                        <Path Style="{StaticResource IconPath}"
+                  Data="M2.5,9 A5.5,5.5 0 1 1 13.5,9 A5.5,5.5 0 1 1 2.5,9 Z M8,6 L8,9 L10,10.5 M6,1.5 L10,1.5"/>
+                    </Button>
+                </DockPanel>
+                <!-- Compact mode: the in-game time, centred in the title bar -->
+                <StackPanel x:Name="TitleTime" Orientation="Horizontal" HorizontalAlignment="Center"
+                            VerticalAlignment="Center" IsHitTestVisible="False" Visibility="Collapsed">
+                    <TextBlock Text="Time:" Foreground="{DynamicResource DimBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TitleTimeValue" FontWeight="SemiBold" FontSize="{DynamicResource FsTime}" VerticalAlignment="Center"/>
+                </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Body (compact mode shows only the selected species rows) -->
+            <Grid x:Name="Body" Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel x:Name="InfoRow" Grid.Row="0" Margin="12,10,12,6">
+                    <DockPanel>
+                        <StackPanel x:Name="TimePanel" DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Time:" Foreground="{DynamicResource DimBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TimeValue" FontWeight="SemiBold" FontSize="{DynamicResource FsTime}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock x:Name="MapName" FontWeight="SemiBold" FontSize="{DynamicResource FsMap}" VerticalAlignment="Center"/>
+                    </DockPanel>
+                </StackPanel>
+
+                <Border x:Name="HeadRow" Grid.Row="1" Margin="12,0" Padding="0,4,0,6"
+                BorderBrush="{DynamicResource HeadLineBrush}" BorderThickness="0,0,0,1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="22"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="{DynamicResource ColW}"/>
+                            <ColumnDefinition Width="{DynamicResource ColW}"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="1" Text="SPECIES" Style="{StaticResource ColHead}"/>
+                        <TextBlock Grid.Column="2" Text="NOW" Style="{StaticResource ColHead}"/>
+                        <TextBlock Grid.Column="3" Text="NEXT" Style="{StaticResource ColHead}"/>
+                    </Grid>
+                </Border>
+
+                <ScrollViewer x:Name="Scroller" Grid.Row="2" Margin="12,0,6,4" VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                    <StackPanel Margin="0,0,6,0">
+                        <TextBlock x:Name="EmptyMessage" Foreground="{DynamicResource DimBrush}" TextWrapping="Wrap"
+                       Margin="0,10" Visibility="Collapsed"/>
+                        <ItemsControl x:Name="RowsList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" Padding="0,7">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="22"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="{DynamicResource ColW}"/>
+                                                <ColumnDefinition Width="{DynamicResource ColW}"/>
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox Grid.Column="0" IsChecked="{Binding Selected, Mode=TwoWay}" VerticalAlignment="Center"
+                                ToolTip="Select / track this species"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Medium" VerticalAlignment="Center"
+                                 TextTrimming="CharacterEllipsis" Margin="0,0,8,0" Cursor="Hand"
+                                 ToolTip="Click to hide / show times" MouseLeftButtonUp="SpeciesName_Click"/>
+                                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding NowNeed}" Foreground="{Binding NowBrush}" FontWeight="SemiBold"
+                                   FontSize="{DynamicResource FsSm}"/>
+                                                <TextBlock Text="{Binding NowTimes}" Visibility="{Binding TimesVisibility}"
+                                   FontSize="{DynamicResource FsSm}" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding NextNeed}" Foreground="{Binding NextBrush}" FontWeight="SemiBold"
+                                   FontSize="{DynamicResource FsSm}"/>
+                                                <TextBlock Text="{Binding NextTimes}" Visibility="{Binding TimesVisibility}"
+                                   Foreground="{DynamicResource NextTimesBrush}" FontSize="{DynamicResource FsSm}"
+                                   Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <Border x:Name="FooterBar" Grid.Row="3" Background="{DynamicResource FootBrush}" CornerRadius="0,0,9,9" Padding="12,6,3,3">
+                    <DockPanel>
+                        <Thumb x:Name="ResizeGrip" DockPanel.Dock="Right" Width="14" Height="14" Cursor="SizeNWSE"
+                   VerticalAlignment="Bottom" DragDelta="ResizeGrip_DragDelta" DragCompleted="ResizeGrip_DragCompleted"
+                   MouseDoubleClick="ResizeGrip_MouseDoubleClick"
+                   ToolTip="Drag to resize · double-click to fit contents">
+                            <Thumb.Template>
+                                <ControlTemplate TargetType="Thumb">
+                                    <Grid Background="Transparent">
+                                        <Path Data="M12,4 L4,12 M12,8 L8,12" Stroke="{DynamicResource DimBrush}" StrokeThickness="1.2"
+                          StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    </Grid>
+                                </ControlTemplate>
+                            </Thumb.Template>
+                        </Thumb>
+                        <CheckBox x:Name="MainSelectedOnlyCheck" DockPanel.Dock="Left" Content="Show selected only"
+                                  VerticalAlignment="Center" Margin="0,0,10,3"
+                                  FontSize="{DynamicResource FsXs}" Foreground="{DynamicResource DimBrush}"
+                                  ToolTip="Show only the species you've ticked"
+                                  Checked="SelectedOnly_Changed" Unchecked="SelectedOnly_Changed"/>
+                        <TextBlock x:Name="FooterText" Foreground="{DynamicResource DimBrush}" FontSize="{DynamicResource FsXs}"
+                                   VerticalAlignment="Center" HorizontalAlignment="Right" TextTrimming="CharacterEllipsis" Margin="0,0,0,3"/>
+                    </DockPanel>
+                </Border>
+            </Grid>
+
+            <!-- Settings popup -->
+            <Popup x:Name="SettingsPopup" PlacementTarget="{Binding ElementName=SettingsButton}" Placement="Custom"
+             StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" Closed="SettingsPopup_Closed">
+                <Border Background="{DynamicResource Bg2Brush}" BorderBrush="{DynamicResource BorderBrushC}"
+                BorderThickness="1" CornerRadius="10" Padding="14,12">
+                    <StackPanel TextElement.FontFamily="{DynamicResource BodyFont}" TextElement.Foreground="{DynamicResource FgBrush}">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Text="THEME" Style="{StaticResource PopLabel}"/>
+                            <ToggleButton x:Name="DarkPill" Content="Dark" Style="{StaticResource TogglePill}" Click="DarkPill_Click"/>
+                            <ToggleButton x:Name="LightPill" Content="Light" Style="{StaticResource TogglePill}" Click="LightPill_Click"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Text="FONT SIZE" Style="{StaticResource PopLabel}"/>
+                            <Button Content="A−" Style="{StaticResource Pill}" ToolTip="Font size" Click="FontDown_Click"/>
+                            <Button Content="A+" Style="{StaticResource Pill}" ToolTip="Font size" Click="FontUp_Click"/>
+                            <TextBlock x:Name="FontValue" Foreground="{DynamicResource DimBrush}" FontSize="{DynamicResource FsSm}"
+                         VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Text="OPACITY" Style="{StaticResource PopLabel}"/>
+                            <Button Content="−" Style="{StaticResource Pill}" ToolTip="Opacity" Click="OpacityDown_Click"/>
+                            <Button Content="+" Style="{StaticResource Pill}" ToolTip="Opacity" Click="OpacityUp_Click"/>
+                            <TextBlock x:Name="OpacityValue" Foreground="{DynamicResource DimBrush}" FontSize="{DynamicResource FsSm}"
+                         VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="TIMES" Style="{StaticResource PopLabel}"/>
+                            <Button Content="Collapse all" Style="{StaticResource Pill}" Click="CollapseAll_Click"/>
+                            <Button Content="Expand all" Style="{StaticResource Pill}" Click="ExpandAll_Click"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <TextBlock Text="UPDATES" Style="{StaticResource PopLabel}"/>
+                            <Button x:Name="UpdateButton" Content="Check for updates" Style="{StaticResource Pill}" Click="UpdateButton_Click"/>
+                            <TextBlock x:Name="VersionText" Foreground="{DynamicResource DimBrush}" FontSize="{DynamicResource FsSm}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock x:Name="UpdateStatus" Foreground="{DynamicResource DimBrush}" FontSize="{DynamicResource FsXs}"
+                                   Margin="84,6,0,0" TextWrapping="Wrap" MaxWidth="240" HorizontalAlignment="Left" Visibility="Collapsed"/>
+                    </StackPanel>
+                </Border>
+            </Popup>
+        </Grid>
+    </Border>
+</Window>

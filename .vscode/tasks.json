@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run overlay",
+      "type": "shell",
+      "command": "dotnet run --project NeedZones.csproj",
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Publish exe",
+      "type": "shell",
+      "command": "dotnet publish NeedZones.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o publish",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}
