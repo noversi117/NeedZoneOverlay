@@ -1,80 +1,105 @@
-# CoTW Need Zone Overlay (C# / WPF)
+# Live Need Zones
 
-A native Windows overlay for theHunter: Call of the Wild that lists every species on a map with its **current need** and **next need**, each with start–end times. It's styled to match UI option A: rounded corners, smooth edges, Inter and Barlow Condensed fonts, dark and light themes.
+An overlay for **theHunter: Call of the Wild** that shows, for every species on your map, which need zone it's using **now** and which one is **next**, each with start and end times.
 
-It doesn't modify or read the game. You pick the map and enter the in-game time yourself.
+It sits on top of the game and never reads or changes any game files. You choose the map and enter the in-game time, and the overlay keeps the clock running from there.
 
-## One-time setup
+## Install
 
-1. Install the **.NET 8 SDK** (x64): https://dotnet.microsoft.com/download/dotnet/8.0
-2. Optional, for code help in VS Code: install the **C# Dev Kit** extension.
-3. In the game: Settings → Display → **Borderless windowed**. Exclusive fullscreen hides overlays.
+1. Download the latest `.zip` from this repository's **Releases** page.
+2. Extract it to a folder of your own, for example `C:\Games\LiveNeedZones`.
+3. Run the `.exe`. Keep the `data` folder.
 
-## Build the exe
+You need the free **.NET 8 Desktop Runtime (x64)**. If it's missing, Windows will offer a download link the first time you run the overlay. You can also get it from https://dotnet.microsoft.com/download/dotnet/8.0
 
-Double-click **`build.bat`**, or in VS Code open this folder and press **Ctrl+Shift+B** ("Publish exe").
+In the game, set **Settings → Display → Borderless windowed**. Exclusive fullscreen hides overlays.
 
-The result is `publish\CotwNeedOverlay.exe`. Keep the `publish\data` folder and `icon.ico` next to it. The fonts are built into the exe.
+## Getting started
 
-To try changes quickly without publishing, run `run.bat`, or in VS Code run the task **Terminal → Run Task → Run overlay**.
+1. Click **Select Map** and choose the map you're hunting on.
+2. Press **Ctrl+Alt+T** (or click the clock icon) and type the in-game time in 24-hour format. Just type the digits: `720` becomes `07:20`, `1905` becomes `19:05`.
+3. Press **Ctrl+Alt+I** for click-through (LOCKED/UNLOCKED), so your mouse goes to the game instead of the overlay. Press it again when you want to use the overlay's buttons.
 
-If the build fails, copy the error lines from the terminal and send them to Claude.
+The overlay counts the in-game time forward on its own. Re-enter it after sleeping in a tent or lodge, after pausing, or if it drifts.
 
-## Using it
+## Reading the table
 
-1. **Select Map** → pick the map you're hunting on.
-2. Click **⏱** and type the in-game time as digits. The `:` and a leading `0` are added for you (`720` → `07:20`).
-3. Press **Ctrl+Alt+I** for click-through so the overlay never takes your clicks. Press it again to use the menus.
+Each row is one species:
+
+- **Now**: the need zone it's using right now (**Feed**, **Drink** or **Rest**) and that window's start–end time. "no need zone" means it isn't at one.
+- **Next**: the need zone that comes after, with its times.
+
+## Controls
 
 | Control | What it does |
 |---|---|
-| Select Map | Choose the map. The button always reads "Select Map"; the chosen map shows below the title bar. |
-| Table | Each species' **Now** need and **Next** need, each with start–end times. |
-| ☐ / ☑ | Select species to track. Select as many as you want. |
+| **Select Map** | Choose the map to show. The chosen map's name appears below the title bar. |
+| Checkbox next to a species | Mark a species you're tracking. Tick as many as you like. |
 | Species name | Click to hide or show that species' times. |
-| ⏱ | Enter the in-game time (24-hour). |
-| Settings (sliders icon) | Theme (dark/light), font size (A− / A+), opacity (− / +), Collapse all / Expand all. |
-| Show selected only | Bottom-left of the overlay: shows only the species you've ticked. |
-| ▴ / ▾ | Compact mode: the title bar shows just the in-game time (centred) and the icons, with only your selected species and their times below. ▾ expands again. |
-| ◢ (bottom-right) | Drag to resize. Double-click to fit the contents again. |
-| Drag the title bar | Move the overlay. |
-| Tray icon | Shows the app is running. Left-click: show/hide. Right-click: click-through, time sync, exit. |
-| Ctrl+Alt+H / I / T | Show/hide · click-through · enter the in-game time. |
+| **Show selected only** (bottom-left) | Show only the species you've ticked. |
+| Clock icon | Enter the in-game time. |
+| Settings icon (sliders) | Theme, font size, opacity, collapse/expand all times, and updates. |
+| ▴ / ▾ | **Compact mode**: the title bar shows only the time, with just your ticked species below. Click ▾ to return to the full view. |
+| ◢ (bottom-right corner) | Drag to resize. Double-click to fit the contents again. |
+| Title bar | Drag to move the overlay. |
+| ✕ | Close the overlay. |
 
-Settings are saved to `%APPDATA%\CotwNeedOverlay\settings-wpf.json`. That's where you change hotkeys (e.g. `"ctrl+shift+f9"`) or the clock speed (`real_seconds_per_game_minute`, default 15 = 1 in-game hour per 15 real minutes).
+### Settings
 
-## Data
+- **Theme**: Dark or Light.
+- **Font size**: A− / A+.
+- **Opacity**: − makes the overlay more see-through, + more solid.
+- **Times**: Collapse all / Expand all.
+- **Updates**: your version and a **Check for updates** button.
 
-Each map is one JSON file in `data\`, with need times from the community "COTW Zone Times" sheet (17 maps). Edit a file to fix a time, or copy one to add a map. Windows are `["HH:MM", "HH:MM", "Feed|Drink|Rest"]`, and the beaver also uses `Den`, `Swim` and `Gather`.
+Your map, ticked species, theme, size, position and time are remembered between sessions.
 
-## Fonts
+## Hotkeys
 
-**Inter** (bundled) and **Barlow Condensed** (downloaded by `get_fonts.bat` during the build). Both are free fonts under the SIL Open Font License. If Barlow Condensed can't be downloaded, the title uses Windows' built-in Bahnschrift.
+These work anywhere, even while you're in the game:
 
-## Project layout
+| Hotkey | Action |
+|---|---|
+| **Ctrl+Alt+T** | Enter the in-game time |
+| **Ctrl+Alt+I** | Switch between click-through and using the overlay |
+| **Ctrl+Alt+H** | Show / hide the overlay |
 
-- `MainWindow.xaml` / `.cs`: the overlay (title bar, table, settings popup, tray, hotkeys, click-through)
-- `SyncWindow.xaml` / `.cs`: the "Enter current time - 24h Format" box
-- `App.xaml`: all the styles (buttons, checkboxes, menus, scrollbar, tooltips)
-- `Schedule.cs`: need-time logic · `Settings.cs`: saved settings and game clock · `Theme.cs`: colors
+## Tray icon
 
-## Updates from GitHub
+While the overlay is running, its leaf icon sits by the Windows clock. It may be hidden under the **^** arrow.
 
-The overlay can update itself from your GitHub repository's releases.
+- **Left-click**: show or hide the overlay.
+- **Right-click**: click-through, enter the time, or exit.
 
-**One-time setup**
-1. Create a **public** GitHub repository and put this project folder in it, so `NeedZones.csproj` sits at the top of the repo. In Visual Studio: **Git → Create Git Repository → GitHub**, and untick "Private".
-2. In `Updater.cs`, set `Repo` to `"your-username/your-repo-name"`, then commit and push.
+## Updates
 
-**Publishing an update**
-1. Commit and push your changes.
-2. Create a tag that starts with `v` and is higher than the last one (e.g. `v1.0.1`) and push it. In Visual Studio: **Git → Manage Branches**, right-click the latest commit → **New Tag**, then push with tags.
-   From a terminal: `git tag v1.0.1` and then `git push origin v1.0.1`.
-3. GitHub Actions (`.github/workflows/release.yml`) builds the app and posts a release with a `.zip`. Watch it under your repo's **Actions** tab. It takes about 2–3 minutes.
+A few seconds after starting, the overlay checks for a newer version. When one is available, the settings icon shows an **amber dot**. Open Settings and click **Update to vX.Y.Z**: the update downloads, installs and restarts the overlay. Your settings are kept.
 
-**In the app**
-- Settings → **UPDATES** shows your version and a **Check for updates** button.
-- The app also checks quietly a few seconds after starting. If there's a newer release, the settings icon gets an amber dot and the button reads **Update to vX.Y.Z**.
-- Updating downloads the zip, replaces the exe, `data` folder and icon, then restarts. Your settings are kept (they live in `%APPDATA%`). Changes you made yourself to files in `data\` are replaced by the release's versions.
+You can also check at any time with **Settings → Check for updates**.
 
-Publishing a release by hand instead: set `<Version>` in `NeedZones.csproj` to the new number, publish, zip the *contents* of the `publish` folder, then create a release on GitHub with tag `v` + that number and attach the zip. The version and the tag must match, or the app keeps offering the same update.
+## Maps included
+
+Hirschfelden, Layton Lake, Medved-Taiga, Vurhonga Savanna, Parque Fernando, Yukon Valley, Cuatro Colinas, Silver Ridge Peaks, Te Awaroa, Rancho del Arroyo, Mississippi Acres, Revontuli Coast, New England Mountains, Emerald Coast, Sundarpatan, Salzwiesen Park and Askiy Ridge.
+
+Need times come from the community "COTW Zone Times" spreadsheet. Waterfowl and rabbit times are approximate. The North American Beaver (Askiy Ridge) shows **Den**, **Swim** and **Gather** instead of the usual needs.
+
+## Advanced settings
+
+Settings are stored in `%APPDATA%\CotwNeedOverlay\settings-wpf.json`. Close the overlay before editing it.
+
+- **Hotkeys**: `hotkey_toggle_visible`, `hotkey_toggle_interact`, `hotkey_sync_clock`, e.g. `"ctrl+shift+f9"`.
+- **Clock speed**: `real_seconds_per_game_minute` (default `15`, so 1 in-game hour = 15 real minutes). Change it if the overlay's time steadily drifts from the game's.
+- **Tray icon**: set `tray_icon` to `false` to hide it.
+
+## Troubleshooting
+
+- **Nothing appears when I start it.** It may already be running: press **Ctrl+Alt+H**, or use the tray icon. If you get a message saying it's already running, end it in Task Manager and start it again.
+- **The overlay doesn't show over the game.** Switch the game to borderless windowed.
+- **Clicks don't do anything on the overlay.** It's in click-through mode. Press **Ctrl+Alt+I**.
+- **"Hotkey in use" in the footer.** Another program uses one of the hotkeys. Pick a different one in the advanced settings.
+- **The time is off.** Press **Ctrl+Alt+T** and enter the current in-game time again.
+- **An update failed.** Make sure the overlay isn't in `Program Files`, or download the newest zip from the Releases page and extract it over your folder.
+
+## Credits
+
+Fonts: **Inter** and **Barlow Condensed**, both under the SIL Open Font License.

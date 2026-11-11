@@ -18,7 +18,7 @@ namespace NeedZones
     public static class Updater
     {
         // ↓↓↓ Your GitHub repository as "username/repo-name". The repo must be public. ↓↓↓
-        public const string Repo = "YOUR-GITHUB-USERNAME/YOUR-REPO-NAME";
+        public const string Repo = "https://github.com/noversi117/NeedZoneOverlay";
 
         public static bool IsConfigured => !Repo.Contains("YOUR-");
 
